@@ -13,6 +13,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AppMybatisPlusConfig {
 
+    /**
+     * mybatis +拦截器  分页插件
+     *
+     * @return {@link MybatisPlusInterceptor}
+     */
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor(){
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();

@@ -15,6 +15,7 @@
     <modules>
 
         <module>service-product</module>
+        <module>service-activity</module>
     </modules>
 
     <properties>

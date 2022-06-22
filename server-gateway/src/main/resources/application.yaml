@@ -17,3 +17,7 @@ spring:
           uri: lb://service-product
           predicates:
             - Path=/admin/product/**
+        - id: activity_route
+          uri: lb://service-activity
+          predicates:
+            - Path=/admin/activity/**
