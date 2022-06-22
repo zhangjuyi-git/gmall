@@ -15,4 +15,40 @@
         id,attr_name,category_id,
         category_level
     </sql>
+
+
+    <!--    自定义属性名和值封装的结果集-->
+    <resultMap id="AttrAndValueResultMap" type="com.atguigu.gmall.model.product.BaseAttrInfo"
+               autoMapping="true">
+        <!--        标识唯一对象-->
+        <id column="id" property="id"></id>
+        <!--        <result property="attrName" column="attr_name" ></result>-->
+        <!--        <result property="categoryId" column="category_id"></result>-->
+        <!--        <result property="categoryLevel" column="category_level"></result>-->
+        <!--       集合封装的时候要区分属于哪个对象的集合 -->
+        <collection property="attrValueList" ofType="com.atguigu.gmall.model.product.BaseAttrValue" autoMapping="true">
+            <!--    集合元素之间也有唯一区分      -->
+            <id property="id" column="vid"></id>
+            <!--            <result property="valueName" column="value_name"></result>-->
+            <!--            <result property="attrId" column="attr_id"></result>-->
+        </collection>
+    </resultMap>
+    <select id="getAttrInfoAndValue" resultMap="AttrAndValueResultMap">
+        select bai.*, bav.id vid, bav.value_name value_name, bav.attr_id attr_id
+        from base_attr_info bai
+        left join base_attr_value bav on bai.id = bav.attr_id
+        <where>
+            <if test="category1Id != 0">
+                (bai.category_id = #{category1Id} and bai.category_level = 1)
+            </if>
+            <if test="category2Id != 0">
+                or (bai.category_id = #{category2Id} and bai.category_level = 2)
+            </if>
+            <if test="category3Id != 0">
+                or (bai.category_id = #{category3Id} and bai.category_level = 3)
+            </if>
+        </where>
+
+    </select>
+
 </mapper>

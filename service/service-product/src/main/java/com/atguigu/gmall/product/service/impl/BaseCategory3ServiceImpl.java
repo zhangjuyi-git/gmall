@@ -21,7 +21,7 @@ public class BaseCategory3ServiceImpl extends ServiceImpl<BaseCategory3Mapper, B
 
         QueryWrapper<BaseCategory3> wrapper = new QueryWrapper<>();
         wrapper.eq("category2_id",category2Id);
-        List<BaseCategory3> list = this.list();
+        List<BaseCategory3> list = this.list(wrapper);
         return list;
     }
 }
