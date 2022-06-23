@@ -47,13 +47,12 @@ public class CouponInfoController {
         return Result.ok(couponInfo);
     }
 
-/*
-    @GetMapping("/findActivityRuleList/{activityRuleId}")
-    public Result findActivityRuleList(@PathVariable("activityRuleId")Long activityRuleId){
+    /*//http://192.168.200.1/admin/activity/couponInfo/findCouponRuleList/7
+    @GetMapping("/findCouponRuleList/{activityRuleId}")
+    public Result findCouponRuleList(@PathVariable("activityRuleId")Long activityRuleId){
         ActivityInfo activityInfo = couponInfoService.getById(activityRuleId);
         return Result.ok(activityInfo);
-    }
-*/
+    }*/
 
     @DeleteMapping("/remove/{couponInfoId}")
     public Result removeCouponById(@PathVariable("couponInfoId")Long couponInfoId){
