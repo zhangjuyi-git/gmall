@@ -6,13 +6,14 @@ import com.atguigu.gmall.common.result.Result;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+
+//@ResponseBody
+//@ControllerAdvice
+
 /**
- * 全局异常处理程序
+ * 处理全局统一异常
  * 1、所有的业务异常都是一个异常 throw new GmallException(业务错误码);
  * 2、系统其它异常
- *
- * @author zhangjuyi
- * @date 2022/06/22
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -25,9 +26,10 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(GmallException.class)
     public Result handleBizException(GmallException e){
-        Result<String> result = new Result<>();
+        Result<String> result = new Result<String>();
         result.setCode(e.getCode());
         result.setMessage(e.getMessage());
+//        String errorJson = JSON.toJSONString(e.getStackTrace());
         result.setData("");
         return result;
     }

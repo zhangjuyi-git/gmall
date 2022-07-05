@@ -8,9 +8,10 @@
         <module>service</module>
         <module>model</module>
         <module>server-gateway</module>
+        <module>mall-cache-starter</module>
     </modules>
 
-    <!--    springboot作为整个父项目 -->
+    <!--    springboot作为整个父项目哈哈呵呵111 -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -90,6 +91,14 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+        </dependency>
+    </dependencies>
 
 
 

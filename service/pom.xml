@@ -13,9 +13,12 @@
     <artifactId>service</artifactId>
     <packaging>pom</packaging>
     <modules>
-
         <module>service-product</module>
-        <module>service-activity</module>
+        <module>web-front</module>
+        <module>service-item</module>
+        <module>service-search</module>
+        <module>service-user</module>
+        <module>service-cart</module>
     </modules>
 
     <properties>
@@ -24,6 +27,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
         <!--依赖服务的工具类-->
         <dependency>
             <groupId>com.atguigu.gmall</groupId>

@@ -1,5 +1,6 @@
 package com.atguigu.gmall.product.controller;
 
+
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.model.product.BaseTrademark;
 import com.atguigu.gmall.product.service.BaseTrademarkService;
@@ -10,83 +11,92 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * @Author:juyi
- * @Date:2022/6/21 19:13
+ * 品牌功能控制器
  */
+@RequestMapping("/admin/product")
 @RestController
-@RequestMapping("/admin/product/baseTrademark")
 public class TrademarkController {
+
 
     @Autowired
     BaseTrademarkService baseTrademarkService;
 
     /**
-     * 获取品牌分页列表
-     *
-     * @param page  页面
-     * @param limit 限制
-     * @return {@link Result}
+     * 获取所有品牌列表
+     * @return
      */
-    @GetMapping("/{page}/{limit}")
-    public Result getBaseTrademark(@PathVariable("page") Long page,
-                                   @PathVariable("limit") Long limit){
-        Page<BaseTrademark> page1 = new Page<>(page,limit);
-        Page<BaseTrademark> page2 = baseTrademarkService.page(page1);
-        return Result.ok(page2);
+    @GetMapping("/baseTrademark/getTrademarkList")
+    public Result getTrademarkList(){
+        List<BaseTrademark> list = baseTrademarkService.list();
+        return Result.ok(list);
+    }
+
+
+
+    /**
+     * page：第几页
+     * limit：每页数量
+     * @return
+     */
+    @GetMapping("/baseTrademark/{page}/{limit}")
+    public Result baseTrademark(@PathVariable("page")  Long page,
+                                @PathVariable("limit") Long limit){
+
+        Page<BaseTrademark> p = new Page<>(page,limit);
+
+        //分页查询
+        Page<BaseTrademark> result = baseTrademarkService.page(p);
+
+        return Result.ok(result);
+    }
+
+
+    /**
+     * 删除
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/baseTrademark/remove/{id}")
+    public Result removeBaseTrademark(@PathVariable("id") Long id){
+
+        baseTrademarkService.removeById(id);
+        return Result.ok();
+    }
+
+
+    /**
+     * 按照id查询
+     * @param id
+     * @return
+     */
+    @GetMapping("/baseTrademark/get/{id}")
+    public Result getbaseTrademarkById(@PathVariable("id") Long id){
+        BaseTrademark trademark = baseTrademarkService.getById(id);
+        return Result.ok(trademark);
     }
 
 
     /**
      * 保存品牌
-     *
-     * @param baseTrademark 基础商标
-     * @return {@link Result}
+     * @param baseTrademark
+     * @return
      */
-    @PostMapping("/save")
+    @PostMapping("/baseTrademark/save")
     public Result saveTrademark(@RequestBody BaseTrademark baseTrademark){
+
         baseTrademarkService.save(baseTrademark);
-     return Result.ok();
+        return Result.ok();
     }
 
     /**
      * 修改品牌
-     *
-     * @param baseTrademark 基础商标
-     * @return {@link Result}
+     * @param baseTrademark
+     * @return
      */
-    @PutMapping("/update")
-    public Result updateBaseTrademark(@RequestBody BaseTrademark baseTrademark){
+    @PutMapping("/baseTrademark/update")
+    public Result updateTrademark(@RequestBody BaseTrademark baseTrademark){
         baseTrademarkService.updateById(baseTrademark);
         return Result.ok();
     }
 
-    /**
-     * 根据ID删除品牌
-     *
-     * @param id id
-     * @return {@link Result}
-     */
-    @DeleteMapping("/remove/{id}")
-    public Result deleteBaseTrademark(@PathVariable("id") Long id){
-        baseTrademarkService.removeById(id);
-        return Result.ok();
-    }
-
-    @GetMapping("/get/{id}")
-    public Result getBaseTrademarkById(@PathVariable("id")Long id){
-        BaseTrademark trademark = baseTrademarkService.getById(id);
-        return Result.ok(trademark);
-
-    }
-
-    /**
-     * 获取品牌属性
-     *
-     * @return {@link Result}
-     */
-    @GetMapping("/getTrademarkList")
-    public Result getTrademarkList(){
-        List<BaseTrademark> list = baseTrademarkService.list();
-        return Result.ok(list);
-    }
 }

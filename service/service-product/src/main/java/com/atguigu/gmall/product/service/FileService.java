@@ -2,10 +2,11 @@ package com.atguigu.gmall.product.service;
 
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * @Author:juyi
- * @Date:2022/6/21 21:19
- */
 public interface FileService {
+    /**
+     * 上传前端提交的文件到Minio
+     * @param file
+     * @return
+     */
     String upload(MultipartFile file) throws Exception;
 }

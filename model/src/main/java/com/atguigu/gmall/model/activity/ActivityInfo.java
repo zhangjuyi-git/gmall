@@ -1,7 +1,6 @@
 package com.atguigu.gmall.model.activity;
 
 import com.atguigu.gmall.model.base.BaseEntity;
-import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -41,7 +40,7 @@ public class ActivityInfo extends BaseEntity {
    private Date endTime;
 
    @ApiModelProperty(value = "创建时间")
-   @TableField(value = "create_time",fill = FieldFill.INSERT)
+   @TableField("create_time")
    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
    private Date createTime;
 

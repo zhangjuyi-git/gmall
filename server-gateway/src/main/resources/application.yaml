@@ -12,12 +12,37 @@ spring:
             allowedMethods: "*"  #允许所有请求方式跨域访问
             allowedHeaders: "*"  #允许任意请求头跨域
             allowCredentials: true #允许Cookie等一些安全标识头跨域
+
       routes:
+        - id: incr_test
+          uri: lb://service-product
+          predicates:
+            - Path=/incr
+
         - id: product_route
           uri: lb://service-product
           predicates:
             - Path=/admin/product/**
-        - id: activity_route
-          uri: lb://service-activity
+
+        - id: user_route
+          uri: lb://service-user
           predicates:
-            - Path=/admin/activity/**
+            - Path=/api/user/**
+
+
+        - id: front_route    #所有 域名的请求都来到 web-front 前端
+          uri: lb://web-front
+          predicates:
+            - Host=**.gmall.com
+
+
+
+
+app:
+  auth:
+    login-page: http://passport.gmall.com/login.html
+    login-url:
+      - /order/**
+      - /incr
+    no-auth-url:
+      - /rpc/inner/**   #内部的rpc请求浏览器不能直接访问
