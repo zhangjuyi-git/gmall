@@ -1,4 +1,4 @@
-package com.atguigu.gmall.item.config;
+package com.atguigu.gmall.common.config.pool;
 
 
 import lombok.Data;

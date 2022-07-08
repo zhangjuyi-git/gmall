@@ -1,12 +1,15 @@
 package com.atguigu.gmall.feign.cart;
 
 import com.atguigu.gmall.common.result.Result;
+import com.atguigu.gmall.model.cart.CartInfo;
 import com.atguigu.gmall.model.vo.cart.AddSuccessVo;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 /**
  * @Author:juyi
@@ -36,5 +39,14 @@ public interface CartFeignClient {
      */
     @GetMapping("/delete/checked")
     Result deleteChecked();
+
+
+    /**
+     * 得到检查购物车条目
+     *
+     * @return {@link Result}<{@link List}<{@link CartInfo}>>
+     */
+    @GetMapping("/checked/items")
+    public Result<List<CartInfo>> getCheckedCartItem();
 
 }

@@ -1,5 +1,6 @@
-package com.atguigu.gmall.item.config;
+package com.atguigu.gmall.common.config.pool;
 
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeUnit;
  * 线程池的配置类
  */
 @Configuration
+@EnableConfigurationProperties(ThreadPoolProperties.class)
 public class AppThreadPoolConfiguration {
 
 

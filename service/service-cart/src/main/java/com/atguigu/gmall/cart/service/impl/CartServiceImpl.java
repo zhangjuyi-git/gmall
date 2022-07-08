@@ -151,7 +151,6 @@ public class CartServiceImpl implements CartService {
             }
         }
 
-
         //2.查询完整的购物车信息
         String cartKey = determineCartKey();
         List<CartInfo> allItem = getCartAllItem(cartKey);
