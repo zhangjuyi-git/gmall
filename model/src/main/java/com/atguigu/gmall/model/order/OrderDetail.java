@@ -41,6 +41,9 @@ public class OrderDetail extends BaseEntity {
     @TableField("sku_num")
     private Integer skuNum;
 
+    @TableField("user_id")
+    private Long userId;
+
     // 是否有足够的库存！
     @TableField(exist = false)
     private String hasStock;
@@ -61,9 +64,5 @@ public class OrderDetail extends BaseEntity {
     @ApiModelProperty(value = "优惠券分摊金额")
     @TableField("split_coupon_amount")
     private BigDecimal splitCouponAmount;
-
-    @TableField("user_id")
-    private Long userId;
-
 
 }

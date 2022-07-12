@@ -15,6 +15,7 @@ import com.atguigu.gmall.product.service.SkuAttrValueService;
 import com.atguigu.gmall.product.service.SkuImageService;
 import com.atguigu.gmall.product.service.SkuInfoService;
 import com.atguigu.gmall.product.service.SkuSaleAttrValueService;
+import com.atguigu.gmall.starter.cache.annotation.Cache;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.redisson.api.RBloomFilter;
@@ -32,14 +33,14 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author lfy
- * @description 针对表【sku_info(库存单元表)】的数据库操作Service实现
- * @createDate 2022-06-21 09:01:27
- */
+* @author lfy
+* @description 针对表【sku_info(库存单元表)】的数据库操作Service实现
+* @createDate 2022-06-21 09:01:27
+*/
 @Slf4j
 @Service
 public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
-        implements SkuInfoService{
+    implements SkuInfoService{
 
     @Autowired
     SkuImageService skuImageService;
@@ -151,9 +152,13 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
         searchFeignClient.downGoods(skuId);
     }
 
+    @Cache(
+            key=RedisConst.SKU_PRICE_CACHE_PREFIX+"#{#params[0]}",
+            bloomName = RedisConst.SKU_BLOOM_FILTER_NAME,
+            bloomIf = "#{#params[0]}"
+    )
     @Override
     public BigDecimal getSkuPrice(Long skuId) {
-
         return skuInfoMapper.getSkuPrice(skuId);
     }
 
@@ -183,23 +188,37 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoMapper, SkuInfo>
         }else {
             cartInfo.setUserId(userAuth.getTempId());
         }
+
         cartInfo.setSkuId(skuId);
         cartInfo.setId(cartInfo.getId());
+
         //查价格
         BigDecimal skuPrice = skuInfoMapper.getSkuPrice(skuId);
         cartInfo.setCartPrice(skuPrice);
+
         cartInfo.setSkuNum(null);
+
         SkuInfo skuInfo = skuInfoMapper.selectById(skuId);
         cartInfo.setImgUrl(skuInfo.getSkuDefaultImg());
         cartInfo.setSkuName(skuInfo.getSkuName());
         //默认被选中
         cartInfo.setIsChecked(1);
+
         cartInfo.setCreateTime(new Date());
         cartInfo.setUpdateTime(new Date());
+
         //商品实时价格
-        cartInfo.setSkuPrice(skuPrice);
+        cartInfo.setSkuPrice(skuPrice);  //未来价格发生变动的话，需要改购物车
+
         cartInfo.setCouponInfoList(null);
+
+
         return cartInfo;
+    }
+
+    @Override
+    public BigDecimal get1010SkuPrice(Long skuId) {
+        return skuInfoMapper.getSkuPrice(skuId);
     }
 }
 

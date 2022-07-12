@@ -92,7 +92,6 @@ public class ItemServiceImpl implements ItemService {
                 searchFeignClient.incrHotScore(skuId,increment);
             },threadPoolExecutor);
         }
-
     }
 
 
@@ -146,8 +145,7 @@ public class ItemServiceImpl implements ItemService {
         if(data == null){
             log.info("sku:{} 详情- 缓存不命中，准备回源..正在检索布隆是否存在这个商品");
             RBloomFilter<Object> filter = redissonClient.getBloomFilter(RedisConst.SKU_BLOOM_FILTER_NAME);
-            //布隆说没有就一定没有
-            if (!filter.contains(skuId)) {
+            if (!filter.contains(skuId)) { //布隆说没有就一定没有
                 log.info("sku:{} 布隆觉得没有，请求无法穿透...");
                 return null;
             }
@@ -181,13 +179,69 @@ public class ItemServiceImpl implements ItemService {
         return data;
     }
 
+//    @Override
+//    public SkuDetailVo getItemDetailWithRedisLock(Long skuId){
+//        //1、先查缓存
+//        String json = redisTemplate.opsForValue().get("sku:info:" + skuId);
+//        //2、判断缓存
+//        if(StringUtils.isEmpty(json)){
+//            //分配一个唯一标识的令牌
+//            String token = UUID.randomUUID().toString().replace("-", "");
+//            //2.1 缓存中没有。准备回源。加上分布式锁。 setnx key value：当这个key不存在才设置
+//            //记录时间 start: 0
+//            Boolean absent = redisTemplate.opsForValue().setIfAbsent("lock:" + skuId, token,10,TimeUnit.SECONDS);//lock:49  lock:50
+//            if(absent){ //无需关注if是否能进来
+////                redisTemplate.expire("lock:" + skuId,10,TimeUnit.SECONDS);
+//                //2.1.1 抢到锁
+//                SkuDetailVo rpc = getItemDetailFromRpc(skuId);
+//                //2.2 把数据放入缓存
+//                redisTemplate.opsForValue().set("sku:info:" + skuId,JSONs.toStr(rpc),7, TimeUnit.DAYS);
+//
+//                //2.3 解锁. 脚本：Lua  "if(redis.get(lock:49).equals(token)) redis.del(lock:49)"
+//                String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+//                //RedisScript<T> script,
+//                //List<K> keys,  //脚本中的KEYS[1]从这个里面取
+//                //Object... args //脚本中的ARGV[1]从这个可变参数取
+//
+//                //执行删锁脚本。  记录时间end  10
+//                // (end-start) < 10s；锁的时间内执行删锁。
+//                Long execute = redisTemplate.execute(new DefaultRedisScript<>(script, Long.class), Arrays.asList("lock:" + skuId), token);
+//                if(execute == 0){
+//                    log.info("又差点删到别人的锁了：lockKey=[{}],lockValue=[{}]","lock:" + skuId,token);
+//                }
+////              if(cc < 10){
+////                   redisTemplate.del;
+////              }
+//                //异步。伴随线程
+//                //while(true){ TimeUnit.SECONDS.sleep(5); //续满期 }
+//
+//                //这个删锁+判断不是原子操作，可能导致删除别人的锁。
+////                String redisToken = redisTemplate.opsForValue().get("lock:" + skuId);
+////                if(token.equals(redisToken)){
+////                    //这是我的锁
+////                    redisTemplate.delete("lock:" + skuId);
+////                } //不是你的锁就不要管
+//
+//                return rpc;
+//            }
+//           //2.3 没抢到锁。等待
+//            try {
+//                TimeUnit.MILLISECONDS.sleep(300);
+//                //2.4 直接查缓存
+//                json = redisTemplate.opsForValue().get("sku:info:" + skuId);
+//                return JSONs.toObj(json,SkuDetailVo.class);
+//            } catch (InterruptedException e) {
+//            }
+//
+//        }
+//
+//        //3、缓存中有
+//        SkuDetailVo obj = JSONs.toObj(json, SkuDetailVo.class);
+//        return obj;
+//    }
 
-    /**
-     * 回源查数据的方法
-     *
-     * @param skuId sku_id
-     * @return {@link SkuDetailVo}
-     */
+
+    //回源查数据的方法
     @SneakyThrows
     public SkuDetailVo getItemDetailFromRpc(Long skuId) {
 

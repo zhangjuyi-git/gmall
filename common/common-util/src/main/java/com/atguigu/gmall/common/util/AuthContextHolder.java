@@ -1,4 +1,7 @@
 package com.atguigu.gmall.common.util;
+
+//import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+
 import com.atguigu.gmall.model.vo.user.UserAuth;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;

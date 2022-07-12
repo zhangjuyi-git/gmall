@@ -10,42 +10,42 @@ spring:
       ds-master-order-0:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.200.100:3306/gmall_order_0?useSSL=false&characterEncoding=utf-8
+        jdbc-url: jdbc:mysql://192.168.200.100:3306/gmall_order_0?useSSL=false&characterEncoding=utf-8
         username: root
         password: root
 
       ds-master-order-1:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.200.100:3306/gmall_order_1?useSSL=false&characterEncoding=utf-8
+        jdbc-url: jdbc:mysql://192.168.200.100:3306/gmall_order_1?useSSL=false&characterEncoding=utf-8
         username: root
         password: root
 
       ds-s1-order-0:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.200.100:3307/gmall_order_0?useSSL=false&characterEncoding=utf-8
+        jdbc-url: jdbc:mysql://192.168.200.100:3307/gmall_order_0?useSSL=false&characterEncoding=utf-8
         username: root
         password: root
 
       ds-s2-order-0:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.200.100:3308/gmall_order_0?useSSL=false&characterEncoding=utf-8
+        jdbc-url: jdbc:mysql://192.168.200.100:3308/gmall_order_0?useSSL=false&characterEncoding=utf-8
         username: root
         password: root
 
       ds-s1-order-1:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.200.100:3307/gmall_order_1?useSSL=false&characterEncoding=utf-8
+        jdbc-url: jdbc:mysql://192.168.200.100:3307/gmall_order_1?useSSL=false&characterEncoding=utf-8
         username: root
         password: root
 
       ds-s2-order-1:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: com.mysql.jdbc.Driver
-        url: jdbc:mysql://192.168.200.100:3308/gmall_order_1?useSSL=false&characterEncoding=utf-8
+        jdbc-url: jdbc:mysql://192.168.200.100:3308/gmall_order_1?useSSL=false&characterEncoding=utf-8
         username: root
         password: root
     rules:
@@ -164,9 +164,9 @@ spring:
         key-generators:
           snow-alg:
             type: SNOWFLAKE
-    #        binding-tables:
-    #          - order_info,order_detail
-    #          - order_info,order_status_log
+#        binding-tables:
+#          - order_info,order_detail
+#          - order_info,order_status_log
     props:
       sql-show: true
 

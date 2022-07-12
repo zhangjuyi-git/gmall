@@ -4,11 +4,7 @@ import lombok.Data;
 
 
 /**
- * 分类视图
  * 封装一个sku对应的精准三级分类的id和名字
- *
- * @author zhangjuyi
- * @date 2022/07/05
  */
 @Data
 public class CategoryView {

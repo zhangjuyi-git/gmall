@@ -8,10 +8,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-/**
- * @Author:juyi
- * @Date:2022/7/8 18:56
- */
 @Controller
 public class OrderController {
 
@@ -20,31 +16,41 @@ public class OrderController {
     OrderFeignClient orderFeignClient;
 
     /**
-     * 跳转到订单确认页面
-     *
-     * @return {@link String}
+     * 跳到订单确认页
+     * @return
      */
     @GetMapping("/trade.html")
-    public String orderTrade(Model model){
+    public String orderConfirmPage(Model model){
 
         Result<OrderConfirmVo> orderConfirmData = orderFeignClient.getOrderConfirmData();
-        OrderConfirmVo data = orderConfirmData.getData();
-        //1.所有选中需要结算的商品
-        model.addAttribute("detailArrayList",data.getDetailArrayList());
 
-        //2.商品数量
+        OrderConfirmVo data = orderConfirmData.getData();
+
+        //1、所有选中需要结算的商品
+        model.addAttribute("detailArrayList",data.getDetailArrayList());//集合
+
+        //2、商品数量
         model.addAttribute("totalNum",data.getTotalNum());
 
-        //3.商品总价
+        //3、商品总价
         model.addAttribute("totalAmount",data.getTotalAmount());
 
-        //4.用户地址
+        //4、用户地址 {consignee、phoneNum、userAddress}
         model.addAttribute("userAddressList",data.getUserAddressList());
 
-        //5.tradeNo: 流水号(追踪号) : 防重令牌
+        //5、tradeNo：流水号（追踪号）；防重令牌；
         model.addAttribute("tradeNo",data.getTradeNo());
 
         return "order/trade";
     }
 
+
+    /**
+     * 订单列表页：myOrder.html
+     */
+    @GetMapping("/myOrder.html")
+    public String orderListPage(){
+        //TODO  列表页数据填充
+        return "order/myOrder";
+    }
 }

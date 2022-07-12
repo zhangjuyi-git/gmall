@@ -20,6 +20,9 @@ public class OrderStatusLog extends BaseEntity {
    @TableField("order_id")
    private Long orderId;
 
+   @TableField("user_id")
+   private Long userId;
+
    @ApiModelProperty(value = "orderStatus")
    @TableField("order_status")
    private String orderStatus;
@@ -27,11 +30,5 @@ public class OrderStatusLog extends BaseEntity {
    @ApiModelProperty(value = "operateTime")
    @TableField("operate_time")
    private Date operateTime;
-
-   @ApiModelProperty(value = "userId")
-   @TableField("user_id")
-   private Long userId;
-
-
 
 }

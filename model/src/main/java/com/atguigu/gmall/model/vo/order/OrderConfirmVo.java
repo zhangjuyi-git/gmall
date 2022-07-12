@@ -8,9 +8,6 @@ import java.util.List;
 
 /**
  * 订单确认数据
- *
- * @author zhangjuyi
- * @date 2022/07/08
  */
 @Data
 public class OrderConfirmVo {

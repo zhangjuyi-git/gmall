@@ -26,13 +26,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-/**
- * @Author:juyi
- * @Date:2022/7/5 19:05
- */
+
 @Slf4j
 @Service
 public class CartServiceImpl implements CartService {
+
 
 
     @Autowired
@@ -40,30 +38,40 @@ public class CartServiceImpl implements CartService {
 
     @Autowired
     SkuFeignClient skuFeignClient;
-    
+
+    /**
+     * 把商品添加到购物车
+     * @param skuId
+     * @param num
+     * @return
+     */
     @Override
     public AddSuccessVo addToCart(Long skuId, Integer num) {
-
         AddSuccessVo successVo = new AddSuccessVo();
-        //1.决定适用哪个购物车
-       String cartKey= determineCartKey();
-       //从购物车中获取该商品  有就增加数量  没有就新增
-        CartInfo item = getCartItem(cartKey,skuId);
-        if (item==null){
-            //没有就新增
+
+        //1、决定使用哪个购物车
+        String cartKey = determinCartKey();
+        //2、添加；原来购物车有没有这个商品，如果没有就是新增，有就是数量叠加
+        //3、尝试从购物车中获取到这个商品
+        CartInfo item = getCartItem(cartKey, skuId);
+        if(item == null){
+            //3.1 没有就新增
             CartInfo info = getCartInfoFromRpc(skuId);
-            //设置数量
+            //3.2 设置数量
             info.setSkuNum(num);
-            //同步到redis
+            //3.3 同步到redis
             saveItemToCart(info,cartKey);
+
+
             successVo.setSkuDefaultImg(info.getImgUrl());
             successVo.setSkuName(info.getSkuName());
             successVo.setId(info.getSkuId());
-        }else{
-            //修改数量
-            item.setSkuNum(item.getSkuNum()+num);
-            //同步到redis
+        }else {
+            //3.2 有就修改数量
+            item.setSkuNum(item.getSkuNum() + num);
+            //3.3 同步到redis
             saveItemToCart(item,cartKey);
+
             successVo.setSkuDefaultImg(item.getImgUrl());
             successVo.setSkuName(item.getSkuName());
             successVo.setId(item.getSkuId());
@@ -71,40 +79,53 @@ public class CartServiceImpl implements CartService {
 
         //设置过期时间；
         setTempCartExpire();
-        
+
         return successVo;
     }
 
     @Override
-    public String determineCartKey() {
-
-        //1.拿到用户信息
+    public String determinCartKey() {
+        //1、拿到用户信息
         UserAuth userAuth = AuthContextHolder.getUserAuth();
-        String cartKey="";
-        if (userAuth.getUserId()!=null){
+        String cartKey = "";
+        if(userAuth.getUserId()!=null){
             //用户登录了
-           cartKey = RedisConst.CART_INFO_PREFIX+userAuth.getUserId();
+            cartKey = RedisConst.CART_INFO_PREFIX + userAuth.getUserId();
         }else {
-            //未登录 使用临时Id
-            cartKey = RedisConst.CART_INFO_PREFIX+userAuth.getTempId();
+            //如果没有临时id。前端自己会造一个传给我们
+            cartKey = RedisConst.CART_INFO_PREFIX + userAuth.getTempId();
         }
         return cartKey;
     }
 
     @Override
     public CartInfo getCartItem(String cartKey, Long skuId) {
-
-        //1.获取一个hash对象
+        //1、拿到一个能操作hash的对象
         HashOperations<String, String, String> ops = redisTemplate.opsForHash();
-        //2.获取cartkey中指定的skuId商品
+        //2、获取cartKey购物车指定的skuId商品
         String json = ops.get(cartKey, skuId.toString());
-        //3.逆转
-        if (StringUtils.isEmpty(json)){
+        //3、逆转
+        if(StringUtils.isEmpty(json)){
             return null;
-        }else{
-            CartInfo info = JSONs.toObj(json, CartInfo.class);
-            return info;
         }
+        CartInfo info = JSONs.toObj(json, CartInfo.class);
+        return info;
+    }
+
+    @Override
+    public void saveItemToCart(CartInfo item, String cartKey) {
+        //1、拿到一个能操作hash的对象
+        HashOperations<String, String, String> ops = redisTemplate.opsForHash();
+        Long skuId = item.getSkuId();
+        //2、给redis保存一个hash数据
+
+        //3、判断购物车是否已经满了
+        if(ops.size(cartKey) < RedisConst.CART_SIZE_LIMIT){
+            ops.put(cartKey,skuId.toString(),JSONs.toStr(item));
+        }else {
+            throw new GmallException(ResultCodeEnum.OUT_OF_CART);
+        }
+
     }
 
     @Override
@@ -116,64 +137,44 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public void saveItemToCart(CartInfo item, String cartKey) {
-        //1.拿到一个操作hash对象
-        HashOperations<String, String, String> ops = redisTemplate.opsForHash();
-        Long skuId = item.getSkuId();
-
-        //判断购物车是否已满
-        if (ops.size(cartKey) < RedisConst.CART_SIZE_LIMIT){
-            //保存到redis
-            ops.put(cartKey,skuId.toString(),JSONs.toStr(item));
-        }else {
-            throw new GmallException(ResultCodeEnum.OUT_OF_CART);
-        }
-    }
-
-    @Override
     public List<CartInfo> getCartAllItem() {
-        //1.是否需要合并 只要有userId 并且tempId对应购物车中有东西 就执行合并操作
-        //拿到身份验证信息  判断是否有userId或tempId
+        //0、是否需要合并： 只要tempId对应的购物车有东西，并且还有userId；合并操作
         UserAuth auth = AuthContextHolder.getUserAuth();
-        //判断
-        if (auth.getUserId()!=null && !StringUtils.isEmpty(auth.getTempId())){
-            //如果购物车中有商品就可以执行合并操作了
+        if(auth.getUserId()!=null && !StringUtils.isEmpty(auth.getTempId())){
+            //有可能合并购物车
+            //1、如果临时购物车有东西，就合并；只需要判断临时购物车是否存在
             Boolean hasKey = redisTemplate.hasKey(RedisConst.CART_INFO_PREFIX + auth.getTempId());
-            if (hasKey) {
-                //购物车中有商品执行合并操作
-                //先拿到临时购物车中的商品
+            if(hasKey){
+                //2、redis有临时购物车。就需要先合并，再获取购物车中所有数据
+                //3、拿到临时购物车的商品
                 List<CartInfo> cartInfos = getCartAllItem(RedisConst.CART_INFO_PREFIX + auth.getTempId());
-                cartInfos.forEach(tempItem ->
-                        //将临时购物车中的商品添加到用户购物车中
-                        addToCart(tempItem.getSkuId(),tempItem.getSkuNum()));
-                //删除临时购物车  **细节**
-                redisTemplate.delete(RedisConst.CART_INFO_PREFIX+auth.getTempId());
+
+                cartInfos.forEach(tempItem->{
+                    //4、每个临时购物车中的商品都添到用户购物车;
+                    addToCart(tempItem.getSkuId(),tempItem.getSkuNum());
+                });
+                //5、删除临时购物车
+                redisTemplate.delete(RedisConst.CART_INFO_PREFIX + auth.getTempId());
             }
         }
 
-        //2.查询完整的购物车信息
-        String cartKey = determineCartKey();
+        String cartKey = determinCartKey();
         List<CartInfo> allItem = getCartAllItem(cartKey);
-
-        //时事更新价格  由于使用异步操作  需要将老请求绑定到新的线程上来
-
-        //获取老请求
-        RequestAttributes oldRequest = RequestContextHolder.getRequestAttributes();
-
-        //每一个商品查一下价格
-        CompletableFuture.runAsync(() -> {
-            log.info("提交一个时事改价的异步线程");
-            allItem.forEach(item ->{
-                //将老请求绑定到这个异步线程上
+        RequestAttributes oldRequest = RequestContextHolder.getRequestAttributes(); //1线程
+        //每一个查一下价格
+        CompletableFuture.runAsync(()->{
+            log.info("提交一个实时改价异步任务");
+            allItem.forEach(item->{
+                //2线程，共享给另一个线程
                 RequestContextHolder.setRequestAttributes(oldRequest);
-                //获取价格
+                //一旦异步，因为在异步线程中 RequestContextHolder.getRequestAttributes() 是获取不到老请求，
+                // 1、feign拦截器就拿不到老请求  2、feign拦截器啥都不做（tempId，userId）都无法继续透传下去
                 Result<BigDecimal> price = skuFeignClient.getSkuPrice(item.getSkuId());
-                //ThreadLocal中的所有东西一定要有放   有删   这里使用了线程池   线程会被复用
-                RequestContextHolder.resetRequestAttributes();
-                if (!item.getSkuPrice().equals(price.getData())) {
+                RequestContextHolder.resetRequestAttributes(); //ThreadLocal的所有东西一定要有放，有删
+                if(!item.getSkuPrice().equals(price.getData())){
                     log.info("正在后台实时更新 【{}】 购物车，【{}】商品的价格；原【{}】，现：【{}】",
                             cartKey,item.getSkuId(),item.getSkuPrice(),price.getData());
-                    //价格发生改变
+                    //发现价格发生了变化
                     item.setSkuPrice(price.getData());
                     //同步到redis
                     saveItemToCart(item,cartKey);
@@ -182,58 +183,57 @@ public class CartServiceImpl implements CartService {
         });
 
         return allItem;
+
     }
 
     @Override
     public List<CartInfo> getCartAllItem(String cartKey) {
-        //获取redis操作hash对象
         HashOperations<String, String, String> ops = redisTemplate.opsForHash();
+
         List<CartInfo> collect = ops.values(cartKey)
-                //获取stream对象
                 .stream()
-                //将流对象转换为指定的javaBean对象
                 .map(jsonStr -> JSONs.toObj(jsonStr, CartInfo.class))
-                //指定排序规则  防止商品显示错乱  **细节**
-                .sorted((pre, next) -> (int) (next.getCreateTime().getTime() - pre.getCreateTime().getTime()))
-                //获取结果集 指定是list类型的结果集
+                .sorted((pre,next)-> (int)(next.getCreateTime().getTime() - pre.getCreateTime().getTime()))
                 .collect(Collectors.toList());
+
         return collect;
     }
 
     @Override
-    public void checkCart(Long skuId, Integer status) {
-        String cartKey = determineCartKey();
-        CartInfo item = getCartItem(cartKey, skuId);
-        item.setIsChecked(status);
+    public void updateCartItemStatus(Long skuId, Integer status) {
+        String cartKey = determinCartKey();
+        CartInfo cartItem = getCartItem(cartKey, skuId);
+        cartItem.setIsChecked(status);
 
-        //同步到redis
-        saveItemToCart(item,cartKey);
-    }
+        //同步redis
+        saveItemToCart(cartItem,cartKey);
 
-    @Override
-    public void deleteCartItem(Long skuId) {
 
-        String cartKey = determineCartKey();
-        //Long(序列化)  ==  String(序列化)
-        redisTemplate.opsForHash().delete(cartKey,skuId.toString());
+
     }
 
     @Override
     public void deleteChecked() {
-        String cartKey = determineCartKey();
-        //找到选中的商品  删除
+
+        String cartKey = determinCartKey();
+
+        //1、找到购物车总所有被选中的商品，并删除他们
         List<CartInfo> cartInfos = getAllCheckedItem(cartKey);
+
+
         Object[] ids = cartInfos.stream()
-                .map(cartInfo -> cartInfo.getSkuId().toString())
+                .map(info -> info.getSkuId().toString())
                 .toArray();
-        //删除
+
+
+        //2、删除他们
         HashOperations<String, String, String> ops = redisTemplate.opsForHash();
         ops.delete(cartKey,ids);
+
     }
 
     @Override
     public List<CartInfo> getAllCheckedItem(String cartKey) {
-
         HashOperations<String, String, String> ops = redisTemplate.opsForHash();
 
         List<CartInfo> infos = ops.values(cartKey)
@@ -241,23 +241,33 @@ public class CartServiceImpl implements CartService {
                 .map(jsonStr -> JSONs.toObj(jsonStr, CartInfo.class))
                 .filter(info -> info.getIsChecked() == 1)
                 .collect(Collectors.toList());
+
         return infos;
     }
 
     @Override
-    public void setTempCartExpire() {
-
-        UserAuth userAuth = AuthContextHolder.getUserAuth();
-        //用户只操作临时购物车
-        if (!StringUtils.isEmpty(userAuth.getTempId()) && userAuth.getUserId() ==null ){
-            //用户带了临时token
-            Boolean hasKey = redisTemplate.hasKey(RedisConst.CART_INFO_PREFIX + userAuth.getTempId());
-            if (hasKey){
-                //临时购物车设置一年有效时间
-                redisTemplate.expire(RedisConst.CART_INFO_PREFIX+userAuth.getTempId(),365, TimeUnit.DAYS);
-            }
-
-        }
+    public void deleteCartItem(Long skuId) {
+        String cartKey = determinCartKey();
+        //Long(序列化) == String(序列化)
+        redisTemplate.opsForHash().delete(cartKey, skuId.toString());
 
     }
+
+    @Override
+    public void setTempCartExpire() {
+        UserAuth auth = AuthContextHolder.getUserAuth();
+
+        //用户只操作临时购物车
+        if (!StringUtils.isEmpty(auth.getTempId()) && auth.getUserId() == null) {
+            //用户带了临时token；
+            //1、如果有临时购物车就设置过期时间。
+            Boolean hasKey = redisTemplate.hasKey(RedisConst.CART_INFO_PREFIX + auth.getTempId());
+            if(hasKey){
+                //临时购物车有一年的时间。
+                redisTemplate.expire(RedisConst.CART_INFO_PREFIX + auth.getTempId(),365, TimeUnit.DAYS);
+            }
+        }
+    }
+
+
 }

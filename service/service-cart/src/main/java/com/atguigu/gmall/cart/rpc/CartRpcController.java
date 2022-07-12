@@ -1,5 +1,6 @@
 package com.atguigu.gmall.cart.rpc;
 
+
 import com.atguigu.gmall.cart.service.CartService;
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.model.cart.CartInfo;
@@ -9,55 +10,65 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * @Author:juyi
- * @Date:2022/7/5 18:57
- */
-@RestController
 @RequestMapping("/rpc/inner/cart")
+@RestController
 public class CartRpcController {
 
 
     @Autowired
     CartService cartService;
-
     /**
-     * 添加商品到购物车
-     *
-     * @param skuId sku id
-     * @param num   数量
-     * @return {@link Result}<{@link AddSuccessVo}>
+     * skuId 商品添加到购物车
+     * @return
      */
     @GetMapping("/add/{skuId}")
-    public Result<AddSuccessVo> addSkuToCart(@PathVariable("skuId")Long skuId,
-                                             @RequestParam("num")Integer num){
+    public Result<AddSuccessVo> addSkuToCart(@PathVariable("skuId") Long skuId,
+                                             @RequestParam("num") Integer num){
 
-        AddSuccessVo vo = cartService.addToCart(skuId,num);
+        //获取当前用户信息. 隐式透传
+//        UserAuth auth = AuthContextHolder.getUserAuth();
+
+        AddSuccessVo vo =  cartService.addToCart(skuId,num);
+
+
+
         return Result.ok(vo);
     }
 
-    /**
-     * 删除选中的购物车项
-     *
-     * @return {@link Result}
-     */
-    @GetMapping("/delete/checked")
-    public Result deleteChecked(){
-        cartService.deleteChecked();
-        return Result.ok();
-    }
 
     /**
-     * 得到检查购物车条目
-     *
-     * @return {@link Result}<{@link List}<{@link CartInfo}>>
+     * 获取购物车中选中的商品
+     * @return
      */
     @GetMapping("/checked/items")
-    public Result<List<CartInfo>> getCheckedCartItem(){
-
-        String cartKey = cartService.determineCartKey();
+    public Result<List<CartInfo>> getCheckedCartItems(){
+        String cartKey = cartService.determinCartKey();
         List<CartInfo> item = cartService.getAllCheckedItem(cartKey);
         return Result.ok(item);
     }
 
+    /**
+     * 删除选中的所有商品
+     * @return
+     */
+    @GetMapping("/delete/checked")
+    public Result deleteChecked(){
+
+        cartService.deleteChecked();
+
+        return Result.ok();
+    }
 }
+
+
+
+//        Object newProxyInstance = Proxy.newProxyInstance(this.getClass().getClassLoader(), this.getClass().getInterfaces(), new InvocationHandler() {
+//
+//            @Override
+//            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+//                //1、自己
+//                return null;
+//            }
+//        });
+
+//        cartService.addToCart(skuId,num,userId);

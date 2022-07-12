@@ -41,6 +41,13 @@ public class SkuRpcController {
 
     @Autowired
     SpudeSkuSaleAttrBizService spudeSkuSaleAttrBizService;
+
+    @GetMapping("/cartinfo/{skuId}")
+    public Result<CartInfo> getCartInfoBySkuId(@PathVariable("skuId") Long skuId){
+        CartInfo cartInfo = skuInfoService.getCartInfoBySkuId(skuId);
+        return Result.ok(cartInfo);
+    }
+
     /**
      * 查询skuInfo信息
      * @param skuId
@@ -110,13 +117,11 @@ public class SkuRpcController {
         return Result.ok(price);
     }
 
+    @GetMapping("/sku/price/shishi/{skuId}")
+    public Result<BigDecimal> get1010SkuPrice(@PathVariable("skuId") Long skuId){
 
-    @GetMapping("/cartinfo/{skuId}")
-    public Result<CartInfo> getCartInfoBySkuId(@PathVariable("skuId")Long skuId){
-
-        CartInfo info = skuInfoService.getCartInfoBySkuId(skuId);
-
-        return Result.ok(info);
-
+//        skuInfoService.getById(skuId); //
+        BigDecimal price = skuInfoService.get1010SkuPrice(skuId);
+        return Result.ok(price);
     }
 }

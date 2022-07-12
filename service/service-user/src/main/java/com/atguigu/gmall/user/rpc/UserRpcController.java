@@ -1,5 +1,6 @@
 package com.atguigu.gmall.user.rpc;
 
+
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.model.user.UserAddress;
 import com.atguigu.gmall.user.service.UserAddressService;
@@ -10,10 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-/**
- * @Author:juyi
- * @Date:2022/7/8 19:32
- */
 @RequestMapping("/rpc/inner/user")
 @RestController
 public class UserRpcController {
@@ -23,8 +20,8 @@ public class UserRpcController {
 
     @GetMapping("/address/list")
     public Result<List<UserAddress>> getUserAddress(){
-        List<UserAddress> address = userAddressService.getUserAddress();
-        return Result.ok(address);
-    }
 
+        List<UserAddress> addresses = userAddressService.getUserAddress();
+        return Result.ok(addresses);
+    }
 }

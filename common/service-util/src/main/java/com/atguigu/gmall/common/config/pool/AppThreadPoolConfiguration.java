@@ -12,8 +12,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * 线程池的配置类
  */
-@Configuration
 @EnableConfigurationProperties(ThreadPoolProperties.class)
+@Configuration
 public class AppThreadPoolConfiguration {
 
 

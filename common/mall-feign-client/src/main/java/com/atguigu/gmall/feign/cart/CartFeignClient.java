@@ -1,5 +1,6 @@
 package com.atguigu.gmall.feign.cart;
 
+
 import com.atguigu.gmall.common.result.Result;
 import com.atguigu.gmall.model.cart.CartInfo;
 import com.atguigu.gmall.model.vo.cart.AddSuccessVo;
@@ -11,42 +12,39 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
-/**
- * @Author:juyi
- * @Date:2022/7/5 20:25
- */
-@FeignClient("service-cart")
-@RequestMapping("/rpc/inner/cart")
-public interface CartFeignClient {
 
+@RequestMapping("/rpc/inner/cart")
+@FeignClient("service-cart")
+public interface CartFeignClient {
 
     /**
      * 添加商品到购物车
-     *
-     * @param skuId sku id
-     * @param num   数量
-     * @return {@link Result}<{@link AddSuccessVo}>
+     * @param skuId
+     * @param num
+     * @return
      */
+//    @GetMapping("/add/{skuId}")
+//    Result addSkuToCart(@PathVariable("skuId") Long skuId,
+//                        @RequestParam("num") Integer num,
+//                        @RequestHeader("UserId") String userId,
+//                        @RequestHeader("UserTempId")String tempId);
+
+    //只需要传入 Request.Options options 就能定制当前请求的一些超时时间
     @GetMapping("/add/{skuId}")
-    Result<AddSuccessVo> addSkuToCart(@PathVariable("skuId")Long skuId,
-                                      @RequestParam("num")Integer num);
+    Result<AddSuccessVo> addSkuToCart(@PathVariable("skuId") Long skuId,
+                                      @RequestParam("num") Integer num);
 
 
     /**
-     * 删除选中的购物车项
-     *
-     * @return {@link Result}
+     * 删除选中的所有商品
+     * @return
      */
     @GetMapping("/delete/checked")
-    Result deleteChecked();
+    public Result deleteChecked();
 
 
-    /**
-     * 得到检查购物车条目
-     *
-     * @return {@link Result}<{@link List}<{@link CartInfo}>>
-     */
     @GetMapping("/checked/items")
-    public Result<List<CartInfo>> getCheckedCartItem();
+    Result<List<CartInfo>> getCheckedCartItems();
+
 
 }
